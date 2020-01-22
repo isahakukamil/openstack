@@ -1,0 +1,2001 @@
+Video Recording - Minutes
+============================
+Part 1:
+========
+1:40 - 2:13 - Agenda + About
+2:13 - 3:02 - What is Openstack ? + Our Build-Up Scope
+3:02 - 4:12 - OpenStack Proliferation / Market Position
+4:12 - 7:25 - Infra-As-A-Service (IaaS) - Main OpenStack Modules
+7:25 - 11:13 - How Services Interact?
+7:50 -   Q1: What is the difference between Cinder & Swift ?
+11:13 - 11:43  - Do-it-Yourself Agenda / Expectations of Cloud Building
+11:43 - 12:49 - VM Layout
+12:49 - 25:33 - VM Setup for Master/Worker Nodes
+25:33 - 27:00  - Install OpenStack Repository on all Nodes
+27:00 - 27:40 - Define Software stack for Controller Node (MySQL, MemCacheD, RabbitMQ, KeyStone, Glance, Nova)
+27:40 - 38:00  - Deployment/Configuration of (MySQL, MemCacheD, RabbitMQ, KeyStone)
+38:00 - 41:00 - Testing (MySQL, MemCacheD, RabbitMQ, KeyStone) by creating Projects/Services/Roles/Users 
+41:00 - 43:00 - Testing Authentication/Tokenization Issuance from KeyStone
+43:00 - 52:00  - (Poll) Openstack Trivia / Discussion
+52:00 - 55:00 - Progress Review of 1 hour
+55:00 - 1:02 - Q&A
+
+Part2:
+=======
+0:00 - 1:30   - Review of Current Status - KeyStone Installed/Configured
+1:30 - 3:30   - Define Glance Architecutre / Deploy Software stack (Glance)
+3:30 - 13:00  - Configure Glance to connect with KeyStone
+13:00 - 14:00 - Test / Load one Image to Glance . (failed)
+14:00 - 21:00 - Fixing Glance failure / Troubleshooting Logs 
+21:00 - 24:00 - Glance Resolution / Test PASS
+24:00 - 27:00 - Define Nova Architecture / Deploy Software Stack (Nova)
+27:00 - 29:00 - Install Nova DB , Service, Endpoints, User
+29:00 - 33:00 - Install Software stack (Nova, Nova-api, Nova conductor ...)
+33:00 - 41:00 - Configure Nova to connect with Keystone & Glance
+41:00 - 48:00 - Test Nova (Failed)
+48:00 - 51:00 - Fixing Nova failure / Troubleshooting Logs 
+51:00 - 51:40 - Nova Resolution / Test PASS
+51:40 - 59:00 - Install/Configure Compute-Node Agent on Worker Compute Node
+1:01:00 - 1:04:00 - Join Worker Compute Node to Master Controller Node
+1:04:00 - 1:06:00 - Verification Master/Worker Nodes for Nova
+1:06:00 - 1:06:59 - Checkpoints / Conclusion
+
+
+Episode 2: 
+===========
+00:00:00 - 00:00:32 - Presenter Background
+00:00:32 - 00:05:00 - Quick Trivia
+00:05:00 - 00:16:00 - Review of Previous - Cloud Built 
+00:16:00 - 00:20:00 - Episode 2 - Coverage: Neutron / Cinder / Horizon
+00:19:00 - 00:23:00 - Review of Openstack Services / How they Interact
+00:23:00 - 00:25:00 - Episode agenda
+00:28:00 - 00:35:00 - Do-It-Yourself - Review of Previous Services / EP1
+00:35:00 - 00:42:00 - Build Horizon Dashboard (Django webapp)on apache + mods
+00:42:00 - 00:51:00 - Test Horizon Dashboard (GUI)::Create Project/User/Image..etc
+00:51:00 - 00:54:00 - Review Networking Center (Neutron)
+00:54:00 - 01:00:00 - Build Networking Center (Neutron): Create db, user, role, service, endpoints
+01:00:00 - 01:07:00 - Configure Networking Center (Neutron), connect to keystone authentication, Agents Layer2,L3
+01:07:00 - 01:11:00 - Configure Networking Center (Neutron) DHCP Agents, Nova glueing/to-accept Neutron
+01:11:00 - 01:14:00 - Populate Neutron DB with prev. configs / Restart Nova compound
+01:14:00 - 01:15:00  - Connect to Compute-Node, from Controller
+01:15:00 - 01:20:00  - Configure Compute-Node (Agents) to connect w/ Neutron Networking Center
+01:20:00 - 01:24:00  - Test Neturon In-Action (Master Install/Compute-Nodes)
+01:24:00 - 01:25:00  - Test Horizon In-Action/ Controller/ComputeNode
+01:25:00 - 01:37:00  - Q/A / End
+
+
+Episode 3:
+===========
+00:00:00 - 00:20:32 - Recap of Previous Progress - Episode 1 & 2
+00:20:00 - 00:55:32 - Install, Configure Controller + Block Storage Node
+00:55:00 - 02:10:32 - Install, Configure Controller + Object Storage Node
+
+
+Episode 4:
+===========
+
+
+==============================================================================
+Pre-Requisites:
+===================
+To Enable Virtualization :
+PowerShell (Admin mode) 
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V –All
+bcdedit /set hypervisorlaunchtype off
+Verify Hypervisorlaunchtype (status : off)
+Disable Hyper-V  > 
+(Windows key) > Turn windows features on or off > (Uncheck ) Hyper-V checkbox
+
+sudo apt-get install openssh-server
+sudo su - #switch to root
+passwd 
+vi /etc/ssh/sshd_config (PermitRootLogin yes)
+service sshd restart
+
+if locks .. kill -9 PID of apt update
+sudo rm /var/lib/apt/lists/lock
+sudo rm /var/cache/apt/archives/lock
+sudo rm /var/lib/dpkg/lock
+
+====================================
+Step 
+1: Create 4 VMs
+====================================
+VM1: Creating our Controller
+=========================
+Controller Node Networking
+/etc/network/interfaces
+auto enp0s8
+iface enp0s8 inet static
+address 10.0.0.8
+netmask 255.255.255.0
+auto enp0s9
+iface enp0s9 inet static
+address 203.0.113.8
+netmask 255.255.255.0
+
+
+Controller Node Hosts File
+/etc/hosts
+10.0.0.9 controller
+203.0.113.9 controller-api
+
+10.0.0.10 compute
+203.0.113.10 compute-api
+
+10.0.0.11 block1
+
+10.0.0.13 object1
+10.0.0.13 object2
+ 
+========================================================
+VM2: Creating our Compute
+=====================
+Compute Node Networking
+/etc/network/interfaces
+auto enp0s8
+iface enp0s8 inet static
+address 10.0.0.8
+netmask 255.255.255.0
+auto enp0s9
+iface enp0s9 inet static
+address 203.0.113.31
+netmask 255.255.255.0
+ 
+Compute Node Hosts File
+/etc/hosts
+10.0.0.6 controller
+203.0.113.11 controller-api
+10.0.0.8 compute
+203.0.113.31 compute-api
+10.0.0.41 block1
+10.0.0.51 object1
+10.0.0.52 object2
+ 
+  
+VM3: Creating our Block Storage Node
+=======================================
+ 
+Block Storage Node Networking
+/etc/network/interfaces
+auto enp0s8
+iface enp0s8 inet static
+address 10.0.0.41
+netmask 255.255.255.0
+ 
+Block Storage Node Hosts File
+/etc/hosts
+10.0.0.6 controller
+203.0.113.11 controller-api
+10.0.0.8 compute
+203.0.113.31 compute-api
+10.0.0.41 block1
+10.0.0.51 object1
+10.0.0.52 object2
+ 
+  
+VM4: Creating our Object Storage Nodes
+===================================
+
+Object Storage Node Networking
+/etc/network/interfaces (each node)
+On object1
+auto enp0s8
+iface enp0s8 inet static
+address 10.0.0.51
+netmask 255.255.255.0
+
+On object2
+auto enp0s8
+iface enp0s8 inet static
+address 10.0.0.13
+netmask 255.255.255.0
+ 
+Object Storage Node Hosts File
+/etc/hosts
+10.0.0.6 controller
+203.0.113.11 controller-api
+10.0.0.8 compute
+203.0.113.31 compute-api
+10.0.0.41 block1
+10.0.0.51 object1
+10.0.0.52 object2
+ 
+=================================================================================================
+Prepping the Environment
+============================ 
+Configuring NTP
+Controller Node
+apt install chrony
+nano /etc/chrony/chrony.conf
+allow 10.0.0.0/24
+service chrony restart
+Other Nodes
+apt install chrony
+nano /etc/chrony/chrony.conf
+#pool 2.debian.pool.ntp.org offline iburst
+
+server controller iburst
+service chrony restart
+chronyc sources
+
+Verify All Nodes
+=============================== 
+OpenStack Packages (All Nodes)
+===============================
+apt install software-properties-common
+add-apt-repository cloud-archive:pike
+add-apt-repository cloud-archive:pike-updates
+apt update && apt dist-upgrade
+apt install python-openstackclient
+============================================
+
+@Controller:: Installing the Database
+=========================================
+apt install mariadb-server python-pymysql
+touch /etc/mysql/mariadb.conf.d/99-openstack.cnf
+[mysqld]
+bind-address = 10.0.0.8
+default-storage-engine = innodb
+innodb_file_per_table = on
+max_connections = 4096
+collation-server = utf8_general_ci
+character-set-server = utf8
+
+service mysql restart
+mysql_secure_installation
+ 
+@Controller: Installing the Message Queue
+============================================
+apt install rabbitmq-server
+rabbitmqctl add_user openstack openstack
+rabbitmqctl set_permissions openstack ".*" ".*" ".*"
+ 
+@Controller: Installing Memcached
+Controller
+apt install memcached python-memcache
+nano /etc/memcached.conf
+#-l 127.0.0.1
+-l 10.0.0.8
+service memcached restart
+   
+@Controller: Installing Keystone
+================================= 
+Database
+Update python-pyasn1:
+apt install python-pyasn1
+Create Keystone database:
+mysql
+create database keystone;
+Grant access:
+grant all privileges on keystone.* to 'keystone'@'localhost' identified by 'openstack';
+grant all privileges on keystone.* to 'keystone'@'%' identified by 'openstack';
+exit
+ 
+Install Components
+
+apt install keystone apache2 libapache2-mod-wsgi
+nano /etc/keystone/keystone.conf
+[database]
+# …
+connection = mysql+pymysql://keystone:openstack@controller/keystone
+[token]
+# …
+provider = fernet
+su -s /bin/sh -c "keystone-manage db_sync" keystone
+
+Populate the database
+Initialize Fernet key repositories
+keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
+
+Bootstrap Identity Service
+keystone-manage bootstrap --bootstrap-password openstack \
+--bootstrap-admin-url http://controller:35357/v3/ \
+--bootstrap-internal-url http://controller:5000/v3/ \
+--bootstrap-public-url http://controller:5000/v3/ \
+--bootstrap-region-id RegionOne
+
+Configure Apache
+nano /etc/apache2/apache2.conf:
+ServerName controller
+
+Restart Apache:
+service apache2 restart
+
+
+Creating Projects, Users and Roles
+Set Credentials
+export OS_USERNAME=admin
+export OS_PASSWORD=openstack
+export OS_PROJECT_NAME=admin
+export OS_USER_DOMAIN_NAME=Default
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_AUTH_URL=http://controller:35357/v3
+export OS_IDENTITY_API_VERSION=3
+
+Create Base Project
+Service Project:
+openstack project create --domain default --description "Service Project" service
+Demo Project:
+openstack project create --domain default --description "Ericsson Cloud Project" demo
+ 
+Creating Projects, Users and Roles
+Create the demo user
+openstack user create --domain default --password-prompt demo
+Create the user role
+openstack role create user
+Add the user role
+openstack role add --project demo --user demo user
+ 
+Verify Installation
+Disable Temporary Auth
+nano /etc/keystone/keystone-paste.ini:
+Remove admin_token_auth from:
+[pipeline:public_api]
+[pipeline:admin_api]
+[pipeline:api_v3]
+Unset Environment Variables
+unset OS_AUTH_URL OS_PASSWORD
+ 
+Verify Installation
+Request Token
+Admin / Demo
+openstack --os-auth-url http://controller:35357/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name admin --os-username admin token issue
+openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name demo --os-username demo token issue
+ 
+Create Credential Files
+nano admin-openrc
+export OS_USERNAME=admin
+export OS_PASSWORD=openstack
+export OS_PROJECT_NAME=admin
+export OS_USER_DOMAIN_NAME=Default
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_AUTH_URL=http://controller:35357/v3
+export OS_IDENTITY_API_VERSION=3
+export OS_IMAGE_API_VERSION=2
+
+nano demo-openrc
+export OS_USERNAME=demo
+export OS_PASSWORD=openstack
+export OS_PROJECT_NAME=demo
+export OS_USER_DOMAIN_NAME=Default
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_AUTH_URL=http://controller:5000/v3
+export OS_IDENTITY_API_VERSION=3
+export OS_IMAGE_API_VERSION=2
+ 
+Using the Credentials Files
+Using admin-openrc
+. admin-openrc
+openstack token issue
+Using demo-openrc
+. demo-openrc
+openstack token issue
+ 
+@Controller: Installing Glance (DB + PKGs + CONFIG)
+===================================================
+Database
+Create Glance Database:
+mysql
+create database glance;
+Grant Access:
+grant all privileges on glance.* to 'glance'@'localhost' identified by 'openstack';
+grant all privileges on glance.* to 'glance'@'%' identified by 'openstack';
+exit
+ 
+Setting up the Glance user
+Source Admin Credentials
+. admin-openrc
+Create the Glance User
+openstack user create --domain default --password-prompt glance
+Add the Admin Role
+openstack role add --project service --user glance admin
+ 
+Setting up the Glance Service and Endpoints
+Create the Service
+openstack service create --name glance --description "OpenStack Imaging" image
+
+Create the Endpoints
+Public/Internal/Admin
+openstack endpoint create --region RegionOne image public http://controller:9292
+openstack endpoint create --region RegionOne image internal http://controller:9292
+openstack endpoint create --region RegionOne image admin http://controller:9292
+ 
+Install Components
+apt install glance
+nano /etc/glance/glance-api.conf
+[database]
+# …
+connection = mysql+pymysql://glance:openstack@controller/glance
+[keystone_authtoken]
+# …
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = glance
+password = openstack
+ 
+[paste_deploy]
+# …
+flavor = keystone
+[glance_store]
+# …
+stores = file,http
+default_store = file
+filesystem_store_directory = /var/lib/glance/images
+ 
+Configure Glance
+nano /etc/glance/glance-registry.conf
+[database]
+# …
+connection = mysql+pymsql://glance:openstack@controller/glance
+[keystone_authtoken]
+# …
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = glance
+password = openstack
+[paste_deploy]
+# ...
+flavor = keystone
+ 
+Populate the Database
+su -s /bin/sh -c "glance-manage db_sync" glance
+
+Finalize Installation
+service glance-registry restart
+service glance-api restart
+ 
+Verify Glance Installation
+=============================
+. admin-openrc
+
+Upload Image
+wget http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img
+
+openstack image create \
+--file cirros-0.3.5-x86_64-disk.img \
+--disk-format qcow2 \
+–-container-format bare \
+--public ericsson_image
+
+List Image
+openstack image list
+    
+@Controller: Installing Nova (DB + PKG + CONFIG)
+=================================================
+Database
+Create Nova databases:
+mysql
+create database nova_api;
+create database nova;
+create database nova_cell0;
+Grant access:
+grant all privileges on nova_api.* to 'nova'@'localhost' identified by 'openstack';
+grant all privileges on nova_api.* to 'nova'@'%' identified by 'openstack';
+grant all privileges on nova.* to 'nova'@'localhost' identified by 'openstack';
+grant all privileges on nova.* to 'nova'@'%' identified by 'openstack';
+grant all privileges on nova_cell0.* to 'nova'@'localhost' identified by 'openstack';
+grant all privileges on nova_cell0.* to 'nova'@'%' identified by 'openstack';
+exit
+ 
+Setting up the Nova User
+Source Admin Credentials
+. admin-openrc
+Create the Nova User
+openstack user create --domain default --password-prompt nova
+Add the Admin Role
+openstack role add --project service --user nova admin
+
+Setting up the Nova Service and Endpoints
+Create the Service
+openstack service create --name nova --description "OpenStack Compute" compute
+
+Create the Endpoints 
+Public/Internal/Admin
+openstack endpoint create --region RegionOne compute public http://controller:8774/v2.1
+openstack endpoint create --region RegionOne compute internal http://controller:8774/v2.1
+openstack endpoint create --region RegionOne compute admin http://controller:8774/v2.1
+ 
+Setting up the Placement User
+Create the Placement User
+openstack user create --domain default --password-prompt placement
+Add the Admin Role
+openstack role add --project service --user placement admin
+ 
+Setting up the Placement Service and Endpoints
+Create the Service
+openstack service create --name placement --description "Placement API" placement
+
+Create the Endpoints
+Public/Internal/Admin
+openstack endpoint create --region RegionOne placement public http://controller:8778
+openstack endpoint create --region RegionOne placement internal http://controller:8778
+openstack endpoint create --region RegionOne placement admin http://controller:8778
+ 
+Install Components
+apt install nova-api nova-conductor nova-consoleauth nova-novncproxy 
+apt install nova-scheduler nova-placement-api
+
+nano /etc/nova/nova.conf
+[api_database]
+connection = mysql+pymysql://nova:openstack@controller/nova_api
+[database]
+connection = mysql+pymysql://nova:openstack@controller/nova
+[DEFAULT]
+transport_url = rabbit://openstack:openstack@controller
+[api]
+auth_strategy = keystone
+ 
+[keystone_authtoken]
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = nova
+password = openstack
+[DEFAULT]
+my_ip = 10.0.0.8
+[DEFAULT]
+#log_dir
+[DEFAULT]
+use_neutron = True
+firewall_driver = nova.virt.firewall.NoopFirewallDriver
+ 
+[vnc]
+enabled = true
+vncserver_listen = $my_ip
+vncserver_proxyclient_address = $my_ip
+[glance]
+api_servers = http://controller:9292
+[oslo_concurrency]
+lock_path = /var/lib/nova/tmp
+[placement]
+auth_url = http://controller:35357/v3
+os_region_name=RegionOne
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = placement
+password = openstack
+ 
+Populate the nova-apidatabase
+su -s /bin/sh -c "nova-manage api_db sync" nova
+
+Finalize Installation
+
+service nova-api restart
+service nova-consoleauth restart
+service nova-scheduler restart
+service nova-conductor restart
+service nova-novncproxy restart
+
+Register the cell0 databases
+su -s /bin/sh -c "nova-manage cell_v2 map_cell0" nova
+
+Create the cell1 cell
+su -s /bin/sh -c "nova-manage cell_v2 create_cell --name=cell1 --verbose" nova
+
+Populate the Nova Database
+su -s /bin/sh -c "nova-manage db sync" nova
+================================================================================================================== 
+@Compute: Installing a compute node
+======================================
+Install Components
+apt install nova-compute
+
+nano /etc/nova/nova.conf
+[DEFAULT]
+transport_url = rabbit://openstack:openstack@controller
+[api]
+auth_strategy = keystone
+ 
+[keystone_authtoken]
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = nova
+password = openstack
+[DEFAULT]
+my_ip = 10.0.0.8
+[DEFAULT]
+#log_dir
+[DEFAULT]
+use_neutron = True
+firewall_driver = nova.virt.firewall.NoopFirewallDrive
+
+[vnc]
+enabled = true
+vncserver_listen = 0.0.0.0
+vncserver_proxyclient_address = $my_ip
+[glance]
+api_servers = http://controller:9292
+[oslo_concurrency]
+lock_path = /var/lib/nova/tmp
+[placement]
+auth_url = http://controller:35357/v3
+os_region_name=RegionOne
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = placement
+password = openstack
+ 
+Check Compute Node Support Acceleration
+egrep -c '(vmx|svm)' /proc/cpuinfo
+nano /etc/nova/nova-compute.conf
+[libvirt]
+# ...
+virt_type = qemu
+
+Restart Compute Service
+service nova-compute restart
+=========================================================================== 
+@Controller: Add Compute to Cell Database 
+Source Admin Credentials
+. admin-openrc
+
+List Compute Services
+openstack compute service list
+
+Discover Compute Hosts
+su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
+
+Populate the Nova Database
+su -s /bin/sh -c "nova-manage db sync" nova
+ 
+Verifying Installation NOVA / List Services & Endpoints
+openstack catalog list
+
+Installing Neutron
+=======================
+Database
+Create Neutron Database:
+mysql
+create database neutron;
+Grant Access:
+grant all privileges on neutron.* to 'neutron'@'localhost' identified by 'openstack';
+grant all privileges on neutron.* to 'neutron'@'%' identified by 'openstack';
+exit
+ 
+Setting up the Neutron User
+Source Admin Credentials
+. admin-openrc
+Create the Neutron User
+openstack user create --domain default --password-prompt neutron
+
+Add the Admin Role
+openstack role add --project service --user neutron admin
+ 
+Setting up the Neutron Service and Endpoints
+
+Create the Service
+openstack service create --name neutron --description "OpenStack Networking Center" network
+
+Create the Endpoints
+Public/Internal/Admin
+openstack endpoint create --region RegionOne network public http://controller:9696
+openstack endpoint create --region RegionOne network internal http://controller:9696
+openstack endpoint create --region RegionOne network admin http://controller:9696
+ 
+Install Components
+apt install neutron-server neutron-plugin-ml2 neutron-linuxbridge-agent 
+neutron-dhcp-agent neutron-metadata-agent
+
+nano /etc/neutron/neutron.conf
+[database]
+connection = mysql+pymysql://neutron:openstack@controller/neutron
+[DEFAULT]
+# ...
+core_plugin = ml2
+service_plugins =
+[DEFAULT]
+transport_url = rabbit://openstack:openstack@controller
+[DEFAULT]
+auth_strategy = keystone
+ 
+[keystone_authtoken]
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = neutron
+password = openstack
+[DEFAULT]
+# ...
+notify_nova_on_port_status_changes = true
+notify_nova_on_port_data_changes = true
+[nova]
+auth_url = http://controller:35357
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = nova
+password = openstack
+ 
+
+nano /etc/neutron/plugins/ml2/ml2_conf.ini
+[ml2]
+type_drivers = flat,vlan
+tenant_network_types =
+mechanism_drivers = linuxbridge
+extension_drivers = port_security
+[ml2_type_flat]
+flat_networks = provider
+[securitygroup]
+enable_ipset = true
+ 
+nano /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+[linux_bridge]
+physical_interface_mappings = provider:enp0s9
+[vxlan]
+enable_vxlan = false
+[securitygroup]
+# ...
+enable_security_group = true
+firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+ 
+nano /etc/neutron/dhcp_agent.ini
+[DEFAULT]
+# ...
+interface_driver = linuxbridge
+dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
+enable_isolated_metadata = true
+
+nano /etc/neutron/metadata_agent.ini
+[DEFAULT]
+# ...
+nova_metadata_host = 10.0.0.9
+metadata_proxy_shared_secret = METADATA_SECRET
+ 
+nano /etc/nova/nova.conf
+[neutron]
+# ...
+url = http://controller:9696
+auth_url = http://controller:35357
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+region_name = RegionOne
+project_name = service
+username = neutron
+password = openstack
+service_metadata_proxy = true
+metadata_proxy_shared_secret = METADATA_SECRET
+ 
+Installing Neutron
+Populate the Neutron Database
+su -s /bin/sh -c "neutron-db-manage --config-file \
+/etc/neutron/neutron.conf --config-file \
+/etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
+
+
+Finalize Installation
+service nova-api restart
+service neutron-server restart
+service neutron-linuxbridge-agent restart
+service neutron-dhcp-agent restart
+service neutron-metadata-agent restart
+ 
+Installing a Compute Node
+Install Components
+apt install neutron-linuxbridge-agent
+
+nano /etc/neutron/neutron.conf
+[DEFAULT]
+transport_url = rabbit://openstack:openstack@controller
+auth_strategy = keystone
+[keystone_authtoken]
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = neutron
+password = openstack
+ 
+Installing a Compute Node
+nano /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+[linux_bridge]
+physical_interface_mappings = provider:enp0s9
+[vxlan]
+enable_vxlan = false
+[securitygroup]
+# ...
+enable_security_group = true
+firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+ 
+Installing a Compute Node
+nano /etc/nova/nova.conf
+[neutron]
+# ...
+url = http://controller:9696
+auth_url = http://controller:35357
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+region_name = RegionOne
+project_name = service
+username = neutron
+password = openstack
+
+Finalize Installation
+service nova-compute restart
+service neutron-linuxbridge-agent restart
+ 
+Verifying Installation
+Source Credentials
+. admin-openrc
+List Network Agents
+openstack network agent list
+ 
+@Controller: Installing Horizon
+====================== 
+Install Components
+apt install openstack-dashboard
+nano /etc/openstack-dashboard/local_settings.py
+OPENSTACK_HOST = "controller"
+OPENSTACK_KEYSTONE_URL = "http://%s:5000/v3" % OPENSTACK_HOST
+OPENSTACK_KEYSTONE_DEFAULT_ROLE = "user"
+OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = "Default"
+ALLOWED_HOSTS = ['*', ]
+
+# SESSION_ENGINE = 'django.contrib.sessions.backends.file' This works as memcached has an issue binding
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+CACHES = {
+'default': {
+'BACKEND':
+'django.core.cache.backends.memcached.MemcachedCache',
+'LOCATION': '10.0.0.9:11211', }}
+
+OPENSTACK_API_VERSIONS = {
+"identity": 3,
+"image": 2,
+"volume": 2,
+}
+OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True
+ 
+
+OPENSTACK_NEUTRON_NETWORK = {
+...
+'enable_router': False,
+'enable_quotas': False,
+'enable_ipv6': False,
+'enable_distributed_router': False,
+'enable_ha_router': False,
+'enable_lb': False,
+'enable_firewall': False,
+'enable_vpn': False,
+'enable_fip_topology_check': False,
+
+#TIME_ZONE = "TIME_ZONE"
+
+nano /etc/apache2/conf-available/openstackdashboard.conf
+WSGIApplicationGroup %{GLOBAL}
+Restart compute service
+service apache2 reload
+ 
+
+@Controller: Installing Cinder - Block Storage Node
+====================================================
+Installing Cinder
+Database
+Create Cinder database:
+mysql
+create database cinder;
+Grant access:
+grant all privileges on cinder.* to 'cinder'@'localhost' identified by 'openstack';
+grant all privileges on cinder.* to 'cinder'@'%' identified by 'openstack';
+exit
+ 
+Setting up the Cinder user
+Source Admin Credentials
+. admin-openrc
+Create the Cinder User
+openstack user create --domain default --password-prompt cinder
+Add the Admin Role
+openstack role add --project service --user cinder admin
+ 
+Setting up the Cinder Services and Endpoints
+Create the Services
+openstack service create --name cinderv2 --description "OpenStack Block Storage" volumev2
+openstack service create --name cinderv3 --description "OpenStack Block Storage" volumev3
+Create the Endpoints
+Public/Internal/Admin
+openstack endpoint create --region RegionOne volumev2 public http://controller:8776/v2/%\(project_id\)s
+openstack endpoint create --region RegionOne volumev2 internal http://controller:8776/v2/%\(project_id\)s
+openstack endpoint create --region RegionOne volumev2 admin http://controller:8776/v2/%\(project_id\)s
+ 
+Setting up the Cinder Services and Endpoints
+Create the Endpoints
+Public/Internal/Admin
+openstack endpoint create --region RegionOne volumev3 public http://controller:8776/v3/%\(project_id\)s
+openstack endpoint create --region RegionOne volumev3 internal http://controller:8776/v3/%\(project_id\)s
+openstack endpoint create --region RegionOne volumev3 admin http://controller:8776/v3/%\(project_id\)s
+ 
+Install Components
+apt install cinder-api cinder-scheduler
+
+nano /etc/cinder/cinder.conf
+[database]
+connection = mysql+pymysql://cinder:openstack@controller/cinder
+[DEFAULT]
+transport_url = rabbit://openstack:openstack@controller
+
+[api]
+auth_strategy = keystone
+ 
+[keystone_authtoken]
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = cinder
+password = openstack
+[DEFAULT]
+my_ip = 10.0.0.9
+[oslo_concurrency]
+lock_path = /var/lib/cinder/tmp
+ 
+Populate the Cinder Database
+su -s /bin/sh -c "cinder-manage db sync" cinder
+
+Finalize Installation
+service nova-api restart
+service cinder-scheduler restart
+service apache2 restart
+
+nano /etc/nova/nova.conf
+[cinder]
+os_region_name = RegionOne
+
+@BlockNode: Installing Cinder - Block Storage Node
+====================================================
+Install Components
+apt install lvm2 thin-provisioning-tools
+
+Create the LVM Physical Volume
+pvcreate /dev/sdb
+Create the LVM Volume Group
+vgcreate cinder-volumes /dev/sdb
+
+nano /etc/lvm/lvm.conf
+devices {
+...
+filter = [ "a/sdb/", "r/.*/"]
+ 
+Install Components
+apt install cinder-volume
+
+nano /etc/cinder/cinder.conf
+[database]
+connection = mysql+pymysql://cinder:openstack@controller/cinder
+[DEFAULT]
+transport_url = rabbit://openstack:openstack@controller
+auth_strategy = keystone
+my_ip = 10.0.0.11
+enabled_backends = lvm
+glance_api_servers = http://controller:9292
+
+[keystone_authtoken]
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = cinder
+password = openstack
+
+[LVM]
+volume_driver = cinder.volume.drivers.lvm.LVMVolumeDriver
+volume_group = cinder-volumes
+iscsi_protocol = iscsi
+iscsi_helper = tgtadm
+ 
+[oslo_concurrency]
+lock_path = /var/lib/cinder/tmp
+
+Finalize Installation
+service tgt restart
+service cinder-volume restart
+ 
+Verifying Installation
+Source Admin Credentials
+. admin-openrc
+
+List Cinder Services
+openstack volume service list
+ 
+
+Installing Swift
+===================== 
+Source Admin Credentials
+. admin-openrc
+Create the Swift User
+openstack user create --domain default --password-prompt swift
+Add the Admin Role
+openstack role add --project service --user swift admin
+ 
+Setting up the Swift Service and Endpoints
+Create the Service
+
+openstack service create --name swift --description "OpenStack Object Storage" object-store
+
+Create the Endpoints
+Public/Internal/Admin
+openstack endpoint create --region RegionOne object-store public http://controller:8080/v1/AUTH_%\(project_id\)s
+openstack endpoint create --region RegionOne object-store internal http://controller:8080/v1/AUTH_%\(project_id\)s
+openstack endpoint create --region RegionOne object-store admin http://controller:8080/v1
+ 
+Install Components
+apt install swift swift-proxy python-swiftclient
+
+Create /etc/swift
+mkdir /etc/swift
+
+Download the Proxy Service config File
+curl -o /etc/swift/proxy-server.conf https://opendev.org/openstack/swift/raw/branch/stable/pike/etc/proxyserver.conf-sample
+
+nano /etc/swift/proxy-server.conf
+
+[DEFAULT]
+bind_port = 8080
+user = swift
+swift_dir = /etc/swift
+[pipeline:main]
+Remove tempurl and tempauth modules and add the authtoken
+and keystoneauth modules
+[app:proxy-server]
+use = egg:swift#proxy
+...
+account_autocreate = True
+[filter:keystoneauth]
+use = egg:swift#keystoneauth
+...
+operator_roles = admin,user
+
+[filter:authtoken]
+paste.filter_factory = keystonemiddleware.auth_token:filter_factory
+...
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = swift
+password = openstack
+delay_auth_decision = True
+[filter:cache]
+use = egg:swift#memcache
+...
+memcache_servers = controller:11211
+ 
+Installing Swift on the Object Storages Nodes
+================================================
+Install Components
+apt install xfsprogs rsync
+
+Format Devices
+mkfs.xfs /dev/sdb
+mkfs.xfs /dev/sdc
+
+Create the Mount Point Directories
+mkdir -p /srv/node/sdb
+mkdir -p /srv/node/sdc
+
+nano /etc/fstab
+/dev/sdb /srv/node/sdb xfs noatime,nodiratime,nobarrier,logbufs=8 0 2
+/dev/sdc /srv/node/sdc xfs noatime,nodiratime,nobarrier,logbufs=8 0 2
+
+Mount the Devices
+mount /dev/sdb
+mount /dev/sdc
+ 
+nano /etc/rsyncd.conf
+
+uid = swift
+gid = swift
+log file = /var/log/rsyncd.log
+pid file = /var/run/rsyncd.pid
+address = 10.0.0.14
+[account]
+max connections = 2
+path = /srv/node/
+read only = False
+lock file = /var/lock/account.lock
+[container]
+max connections = 2
+path = /srv/node/
+read only = False
+lock file = /var/lock/container.lock
+[object]
+max connections = 2
+path = /srv/node/
+read only = False
+lock file = /var/lock/object.lock
+ 
+RSYNC_ENABLE =true
+Restart rsync
+service rsync restart
+ 
+Installing Swift on the Object Storages Nodes
+=================================================
+Install Components
+apt install swift swift-account swift-container swift-object
+
+Download the Config Files
+curl -o /etc/swift/account-server.conf https://opendev.org/openstack/swift/raw/branch/stable/pike/etc/account-server.conf-sample
+curl -o /etc/swift/container-server.conf https://opendev.org/openstack/swift/raw/branch/stable/pike/etc/container-server.conf-sample
+curl -o /etc/swift/object-server.conf  https://opendev.org/openstack/swift/raw/branch/stable/pike/etc/object-server.conf-sample
+ 
+nano  /etc/swift/account-server.conf
+
+[DEFAULT]
+bind_ip = 10.0.0.14
+bind_port = 6202
+user = swift
+swift_dir = /etc/swift
+devices = /srv/node
+mount_check = True
+[pipeline:main]
+pipeline = healthcheck recon account-server
+[filter:recon]
+use = egg:swift#recon
+...
+recon_cache_path = /var/cache/swift
+ 
+
+nano /etc/swift/container-server.conf
+[DEFAULT]
+bind_ip = 10.0.0.14
+bind_port = 6201
+user = swift
+swift_dir = /etc/swift
+devices = /srv/node
+mount_check = True
+[pipeline:main]
+pipeline = healthcheck recon container-server
+[filter:recon]
+use = egg:swift#recon
+...
+recon_cache_path = /var/cache/swift
+ 
+nano /etc/swift/object-server.conf
+[DEFAULT]
+bind_ip = 10.0.0.14
+bind_port = 6200
+user = swift
+swift_dir = /etc/swift
+devices = /srv/node
+mount_check = True
+[pipeline:main]
+pipeline = healthcheck recon object-server
+[filter:recon]
+use = egg:swift#recon
+...
+
+recon_cache_path = /var/cache/swift
+recon_lock_path = /var/lock
+
+Fix Permissions
+chown swift:swift /srv/node/sdb
+chown swift:swift /srv/node/sdc
+ 
+Create Account Ring on Controller
+Change Directories
+cd /etc/swift
+
+Create Base account.builder File
+Add Each Node and Drive to Ring
+swift-ring-builder account.builder create 10 3 1
+
+swift-ring-builder account.builder add --region 1 --zone 1 --ip 10.0.0.14 --port 6202 --device sdb --weight 100
+swift-ring-builder account.builder add --region 1 --zone 1 --ip 10.0.0.14 --port 6202 --device sdc --weight 100
+
+
+Additional Object Storage Nodes:
+swift-ring-builder account.builder add --region 1 --zone 1 --ip 10.0.0.52 --port 6202 --device sdb --weight 100
+swift-ring-builder account.builder add --region 1 --zone 1 --ip 10.0.0.52 --port 6202 --device sdc --weight 100
+
+ 
+Create Account Ring on Controller
+Verify the Ring
+swift-ring-builder account.builder
+
+Rebalance the Ring
+swift-ring-builder account.builder rebalance
+ 
+Create Container Ring on Controller
+Create Base container.builder File
+swift-ring-builder container.builder create 10 3 1
+
+Add Each Node and Drive to Ring
+
+swift-ring-builder container.builder add --region 1 --zone 1 --ip 10.0.0.14 --port 6201 --device sdb --weight 100
+swift-ring-builder container.builder add --region 1 --zone 1 --ip 10.0.0.14 --port 6201 --device sdc --weight 100
+
+(Additional STorage Node2 ):
+swift-ring-builder container.builder add --region 1 --zone 1 --ip 10.0.0.52 --port 6201 --device sdb --weight 100
+swift-ring-builder container.builder add --region 1 --zone 1 --ip 10.0.0.52 --port 6201 --device sdc --weight 100
+
+Verify the Ring
+swift-ring-builder container.builder
+
+Rebalance the Ring
+swift-ring-builder container.builder rebalance
+ 
+Create Object Ring on Controller
+Create Base object.builder File
+swift-ring-builder object.builder create 10 3 1
+
+Add Each Node and Drive to Ring
+swift-ring-builder object.builder add --region 1 --zone 1 --ip 10.0.0.14 --port 6200 --device sdb --weight 100
+swift-ring-builder object.builder add --region 1 --zone 1 --ip 10.0.0.14 --port 6200 --device sdc --weight 100
+
+(Additional Storage Node2)
+swift-ring-builder object.builder add --region 1 --zone 1 --ip 10.0.0.52 --port 6200 --device sdb --weight 100
+swift-ring-builder object.builder add --region 1 --zone 1 --ip 10.0.0.52 --port 6200 --device sdc –weight1 100
+
+Verify the Ring
+swift-ring-builder object.builder
+
+Rebalance the Ring
+swift-ring-builder object.builder rebalance
+ 
+Distribute Ring Files
+Accept Keys if Needed
+
+ssh 10.0.0.51
+ssh 10.0.0.52
+
+Distribute the Ring Files
+
+for x in 10.0.0.51 10.0.0.52 ; 
+do
+    scp *.ring.gz amy@$x:/tmp/;
+done
+
+Move Ring Files to /etc/swift on Each Node
+mv /tmp/*.ring.gz /etc/swift
+ 
+Finalizing Swift
+Obtain swift.conf
+curl -o /etc/swift/swift.conf https://opendev.org/openstack/swift/raw/branch/stable/pike/etc/swift.conf-sample
+
+
+Create 2 Hash Secrets
+openssl rand –hex 6
+
+nano /etc/swift/swift.conf
+[swift-hash]
+...
+swift_hash_path_suffix = HASH_PATH_SUFFIX
+swift_hash_path_prefix = HASH_PATH_PREFIX
+[storage-policy:0]
+...
+name = Policy-0
+default = yes
+ 
+Finalizing Swift
+Distribute swift.conf
+
+for x in 10.0.0.51 10.0.0.52 ; 
+do 
+    scp /etc/swift/swift.conf amy@$x:/tmp/;
+done
+
+Move Ring Files to /etc/swift on Each Node
+mv /tmp/swift.conf /etc/swift
+
+Ensure Proper Ownership
+
+chown -R root:swift /etc/swift
+
+Restart Services on Controller
+service memcached restart
+service swift-proxy restart
+
+Start Services on Object Storage Nodes
+swift-init all start
+ 
+Verifying Installation
+Source Demo Credentials
+. demo-openrc
+Show Status
+swift stat
+
+Create testfile
+echo 'Ericsson Quest for EASY' > testfile
+
+Upload a Test File
+openstack object create container1 testfile
+
+List Files in Container
+openstack object list container1
+
+Download File from Container
+openstack object save container1 testfile
+
+Create Container
+openstack container create container1
+ 
+  
+Installing Heat
+================
+Database
+Create heat database:
+mysql
+create database heat;
+Grant access:
+grant all privileges on heat.* to 'heat'@'localhost' identified by 'openstack';
+grant all privileges on heat.* to 'heat'@'%' identified by 'openstack';
+exit
+ 
+Setting up the Heat User
+Source Admin Credentials
+. admin-openrc
+Create the Heat User
+openstack user create --domain default --password-prompt heat
+Add the Admin Role
+openstack role add --project service --user heat admin
+ 
+Setting up the Heat Service and Endpoints
+Create the Service
+openstack service create --name heat --description "Orchestration" orchestration
+openstack service create --name heat-cfn --description "Orchestration" cloudformation
+Create the Endpoints
+Public/Internal/Admin
+openstack endpoint create --region RegionOne orchestration public http://controller:8004/v1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne orchestration internal http://controller:8004/v1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne orchestration admin http://controller:8004/v1/%\(tenant_id\)s
+ 
+Setting up the Heat Service and Endpoints
+Create the Endpoints
+Public/Internal/Admin
+openstack endpoint create --region RegionOne cloudformation public http://controller:8000/v1
+openstack endpoint create --region RegionOne cloudformation internal http://controller:8000/v1
+openstack endpoint create --region RegionOne cloudformation admin http://controller:8000/v1
+ 
+Additional Identity Information
+Create the Heat Domain
+openstack domain create --description "Ericsson OSS Stack projects and users" heat
+Create the heat_domain_user user
+openstack user create --domain heat --password-prompt heat_domain_admin
+Add the Admin Role
+openstack role add --domain heat --user-domain heat --user heat_domain_admin admin
+
+Create the heat_stack_owner role
+openstack role create heat_stack_owner
+Add the heat_stack_owner role
+openstack role add --domain heat --user demo heat_stack_owner
+
+
+
+Install Components
+apt install heat-api heat-api-cfn heat-engine
+
+nano /etc/heat/heat.conf
+[database]
+# …
+connection = mysql+pymysql://heat:openstack@controller/heat
+[DEFAULT]
+transport_url = rabbit://openstack:openstack@controller
+ 
+[keystone_authtoken]
+# …
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = heat
+password = openstack
+[trustee]
+# …
+auth_type = password
+auth_url = http://controller:35357
+username = heat
+password = openstack
+user_domain_name = default
+ 
+[clients_keystone]
+# …
+auth_uri = http://controller:35357
+[ec2authtoken]
+# …
+auth_uri = http://controller:5000/v3
+[DEFAULT]
+heat_metadata_server_url = http://controller:8000
+heat_waitcondition_server_url = http://controller:8000/v1/waitcondition
+[DEFAULT]
+stack_domain_admin = heat_domain_admin
+stack_domain_admin_password = openstack
+stack_user_domain_name = heat
+ 
+Populate the Database
+su –s /bin/sh –c "heat-manage db_sync"
+
+Finalize Installation
+service heat-api restart
+service heat-api-cfn restart
+service heat-engine restart
+ 
+Verify Installation
+Source Credentials
+. admin-openrc
+List Services
+openstack orchestration service list
+ 
+
+Launching an Instance
+======================
+Creating Virtual Networks
+Source Admin Credentials
+. admin-openrc
+
+Create the Network
+====================
+openstack network create --share --provider-physical-network provider \
+--provider-network-type flat provider
+
+Creating a Subnet
+====================
+openstack subnet create --network provider \
+--allocation-pool start=203.0.113.101,end=203.0.113.250 \
+--dns-nameserver 8.8.8.8 --gateway 203.0.113.1 --subnet-range 203.0.113.0/24 provider
+ 
+Creating a flavor
+===================
+Create a m1.nano 
+openstack flavor create --id 0 --vcpus 1 --ram 64 --disk 1 m1.nano
+ 
+Generate a key pair
+=====================
+Source the demo credentials
+. demo-openrc
+Generate the key pair
+ssh-keygen -q -N ""
+Upload the key pair
+openstack keypair create --public-key ~/.ssh/id_rsa.pub mykey
+Verify the key pair
+openstack keypair list
+ 
+Create a security group rule
+==============================
+Add rules to default security group
+openstack security group rule create --proto icmp default
+openstack security group rule create --proto tcp --dst-port 22 default
+ 
+Review Instance Options List available flavors
+openstack flavor list
+
+List available images
+openstack image list
+
+List networks
+openstack network list
+
+List security groups
+openstack security group list
+ 
+
+Create the instance
+======================
+
+PROVIDER_NET_ID = 6af66668-a127-440a-9e93-5039b9bb02c4 (from openstack network list - ID)
+
+openstack server create \
+--flavor m1.nano \
+--image cirros \
+--nic net-id=PROVIDER_NET_ID \
+--security-group default \
+--key-name mykey \
+provider-instance
+
+openstack server create \
+--flavor m1.nano \
+--image cirros \
+--nic net-id=bd341c3f-1a87-413c-8667-ca953dbad290 \
+--security-group default \
+--key-name mykey \
+ericsson-instance
+
+
+========== slax instance ===============
+. demo-openrc
+
+openstack server create \
+--flavor m1.nano \
+--image tinycore \
+--nic net-id=6af66668-a127-440a-9e93-5039b9bb02c4 \
+--security-group default \
+--key-name tinykey \
+tinycore-instance
+
+Check the status of your instance 
+openstack server list
+ 
+
+Managing Swift ACLs
+======================== 
+Controlling Read Access
+HTTP refererheader can read container contents:
+-r ".r:*"
+HTTP refererheader can read and list container
+contents:
+-r ".r:*,.rlistings"
+A list of specific HTTP referer headers permitted to
+read container contents:
+-r ".r:openstack.example.com,.r:swift.example.com"
+A list of specific HTTP refererheaders denied read
+access:
+-r ".r:*,.r:-openstack.example.com,.r:-swift.example.com"
+ 
+
+All users residing in project1 can read container
+contents:
+-r "project1:*"
+user1 from project1 can read container contents:
+-r "project1:user1"
+A list of specific users and projects permitted to
+read container contents:
+-r "project1:user1,project1:user2,project3:*"
+ 
+Controlling Write Access
+All users residing in project1 can write to the
+container:
+-w "project1:*"
+user1 from project1 can write to the container:
+-w "project1:user1"
+A list of specific users and projects permitted to
+write to the container:
+-w "project1:user1,project1:user2,project3:*"
+ 
+Expiring Objects
+Set an object to expire at an absolute time (in Unix time). You can get the current Unix time by running
+date +'%s'.:
+-H "X-Delete-At:UNIX_TIME"
+Set an object to expire after a relative amount of time (in seconds):
+-H "X-Delete-After:SECONDS"
+If you no longer want to expire the object, you can remove the X-Delete-At header:
+-H "X-Remove-Delete-At:"
+ 
+  
+OpenStack Pike on Ubuntu
+Managing Policies
+===================
+Example Policies
+less /etc/cinder/policy.json
+Rules:
+"admin_or_owner": "is_admin:True or (role:admin and
+is_admin_project:True) or project_id:%(project_id)s",
+"default": "rule:admin_or_owner",
+"admin_api": "is_admin:True or (role:admin and
+is_admin_project:True)",
+Policies:
+"volume:create": "",
+"volume:create_from_image": "",
+"volume:delete": "rule:admin_or_owner",
+"volume:force_delete": "rule:admin_api",
+"volume:get": "rule:admin_or_owner",
+ 
+Managing Policies
+Restart Service
+systemctl restart openstack-cinder-api.service
+systemctl restart openstack-cinder-scheduler.service
+NOTE: The Lab is running on CentOS, but our installation is
+Ubuntu. If you want to change policies and restart Cinder on
+Ubuntu, use the following:
+service cinder-scheduler restart
+service apache2 restart
+nano/etc/cinder/policy.json
+"volume:create": "rule:admin_or_owner",
+
+
+
+
+To get a Quick OpenStack LAB:
+https://docs.openstack.org/training_labs/
+https://wiki.openstack.org/wiki/Documentation/training-labs#Building_the_cluster 
+
+
+
+
+
+================================
+vEPG depolyment:
+=================================
+python -c "import ssl; print ssl.OPENSSL_VERSION"
+OpenSSL 1.0.2g  1 Mar 2016 (has to be 1.0.2.a or newer)
+
+
+Download: 
+EPG Virtual Deployment Package ( vdp_epg_qcow2_cxp9026845 )
+SW GW: T-116222
+product no: cxp9026845/190
+
+
+BCAT directory. The BCAT directory includes the following files:
+        Deployment and scale out scripts
+        Template configuration files – for VIRTIO and SR-IOV deployments
+        VNFD Wrapper file
+
+    VNFD_Wrapper_EPG.json
+    VNFD wrapper file.
+    
+    epg_vrp_cxp9026845_<productRevision>.qcow2
+    Image for Route Processor VM type (VRP).
+    
+    epg_vsfo_cxp9026845_<productRevision>.qcow2
+    Image for Service-Forwarder VM type (VSFO).
+
+
+EPG sharepoint deliverables:
+https://ericsson.sharepoint.com/sites/plm_epg/EPG_2/Pages/Deliveries.aspx?RootFolder=%2Fsites%2Fplm%5Fepg%2FEPG%5F2%2FLists%2FDeliveries%2FEPG%202%20Virtual&FolderCTID=0x0120007761B452DEADDE4482706DE82724EB63&View=%7BA8A1B770%2DB392%2D4814%2D945A%2D6011ADB92ABA%7D
+
+CPI EPG 2 Virtual, EN/LZN 704 0225 R9F
+http://cpistore.internal.ericsson.com/alexserv?li=EN/LZN7040225R9F
+
+https://ericsson.sharepoint.com/sites/NFVI_classic/Shared Documents/Old material 
+
+
+
+In:
+Upload Images:
+
+EPG VRP Image 
+
+openstack image create --file epg_vrp_cxp9026845_27r9b44.qcow2 \
+--disk-format qcow2  --container-format bare \
+--public epg_vrp_cxp9026845_27r2b34
+
++------------------+------------------------------------------------------+
+| Field            | Value                                                |
++------------------+------------------------------------------------------+
+| checksum         | 82800ac04b203f557aba8a1852a3ff9f                     |
+| container_format | bare                                                 |
+| created_at       | 2019-11-10T20:20:05Z                                 |
+| disk_format      | qcow2                                                |
+| file             | /v2/images/5c975f68-b130-4bb0-93ee-9b997f95df9f/file |
+| id               | 5c975f68-b130-4bb0-93ee-9b997f95df9f                 |
+| min_disk         | 0                                                    |
+| min_ram          | 0                                                    |
+| name             | epg_vrp_cxp9026845_27r2b34                           |
+| owner            | f057597c66ff4bd39671d291abecc15e                     |
+| protected        | False                                                |
+| schema           | /v2/schemas/image                                    |
+| size             | 3686400000                                           |
+| status           | active                                               |
+| tags             |                                                      |
+| updated_at       | 2019-11-10T20:20:58Z                                 |
+| virtual_size     | None                                                 |
+| visibility       | public                                               |
++------------------+------------------------------------------------------+
+
+
+EPG VSFO Image :
+openstack image create --file epg_vsfo_cxp9026845_27r9b44.qcow2 \
+--disk-format qcow2  --container-format bare \
+--public epg_vsfo_cxp9026845_27r9b44
+
++------------------+------------------------------------------------------+
+| Field            | Value                                                |
++------------------+------------------------------------------------------+
+| checksum         | 6811e87ae8e5f774526aa8ac63ef8fbe                     |
+| container_format | bare                                                 |
+| created_at       | 2019-11-10T23:23:08Z                                 |
+| disk_format      | qcow2                                                |
+| file             | /v2/images/a6a393a8-e040-4251-9a7a-46167fbd8421/file |
+| id               | a6a393a8-e040-4251-9a7a-46167fbd8421                 |
+| min_disk         | 0                                                    |
+| min_ram          | 0                                                    |
+| name             | epg_vsfo_cxp9026845_27r9b44                          |
+| owner            | f057597c66ff4bd39671d291abecc15e                     |
+| protected        | False                                                |
+| schema           | /v2/schemas/image                                    |
+| size             | 2764374016                                           |
+| status           | active                                               |
+| tags             |                                                      |
+| updated_at       | 2019-11-10T23:23:42Z                                 |
+| virtual_size     | None                                                 |
+| visibility       | public                                               |
++------------------+------------------------------------------------------+
+
+============================================================================
+
+3.6.1   HOT File + HOT PAckage
+A HOT file can be used in the following types of deployment:
+-VIRTIO - directly into CEE or generic OpenStack
+-VIRTIO - through the EO
+-SR-IOV VLAN
+-SR-IOV - flat
+
+HOT Package Structure - without Resource Groups
+|-- Resources
+|   |-- EnvironmentFiles
+|   |   `-- env.yaml                
+            example:
+            Images
+            Flavors
+            Network IDs
+            Network cidrs
+            VLAN IDs
+            rp vnf configs (rp_evr_info)
+            vsfo_pp_count (if resource groups are used)
+            vsfo_cp_count (if resource groups are used)
+            HOT parameter examples:
+            vnf1_vnfc1_flavor: 2vcpu_6144MBmem_40GBdisk
+            vnf1_vnfc1_image: epg_vrp_cxp9026845_25r4a619
+            vnf1_vnfc1_availability_zones: [zone1, zone2]
+            vnf1_BP_cidr: 127.3.0.0/16
+            sa_sgw_vlan_id: 111
+
+|   |-- HotFiles
+|   `-- VnfdWrapperFiles
+|       `-- VNFD_Wrapper_EPG.json
+`-- template.yaml
+
+
+
+
+
+===================================================================================================
+For SR-IOV FLAT deployments: (OK) -- Watchout to modify vdp versions
+===================================================================================================
+The --vdp argument specifies the path to the images directory, and is optional. If supplied it can be used to override images defined in the vepc.yaml file.
+The --auto-config argument specifies the auto-configuration file prepared in Section 2.5.1.2.
+If the --vnf-id is not specified, all the VNFs defined in the auto-configuration file under the deployment section are deployed.
+If some VNFs anoare not required in a customized solution, modify the deployment section in the auto-configuration file to list the VNFs to be included.
+The script can be run multiple times, it has built-in checks to ignore existing images, flavors, or already deployed VNFs.
+===================================================================================================
+
+cp vepg_sriov_flat_example_config_v3.yaml mkf_vepg_sriov.yam
+
+python bcat_deploy_via_cee.py -c epg/mkf_vepg_sriov.yaml \
+--vdp ../../vdp_epg_qcow2_cxp9026845_27r9b44 \
+--vnf-config epg/mkf_ericsson_templ.xml \
+--deployment epg:vepg-45-2
+
+INFO     > VNFs to be deployed: vepg-45-2(EPG)
+INFO     > Looking for EPG images in the VDP directories
+INFO     > EPG images found in ../../vdp_epg_qcow2_cxp9026845_27r9b44
+INFO     > Generating the HEAT template for 'vepg-45-2'
+INFO     > The generated HEAT template for 'vepg-45-2': EPG_hot_cxp9026845_27r9b44.yaml
+INFO     > Creating the needed CEE availability zones and flavors
+INFO     > Flavor '16vcpu_16384MBmem_40GBdisk' already exist in Openstack
+INFO     > Flavor '2vcpu_6144MBmem_40GBdisk' already exist in Openstack
+INFO     > Flavor '6vcpu_16384MBmem_40GBdisk' already exist in Openstack
+INFO     > Host 'compute' is assigned to Availability Zone 'zone2_az'
+INFO     > Uploading the EPG images to Openstack
+INFO     > Image 'epg_vrp_cxp9026845_27r9b44.qcow2' will be uploaded
+INFO     > Id of created image: ebc0f4a8-b69e-4540-9004-c182e7192b73
+INFO     > Upload done!
+INFO     > Image 'epg_vsfo_cxp9026845_27r9b44.qcow2' will be uploaded
+INFO     > Id of created image: c39fb204-1a24-4f4c-a568-fba06dd04b9f
+INFO     > Upload done!
+INFO     > Validating the HOT file EPG_hot_cxp9026845_27r9b44.yaml for 'vepg-45-2' using the HEAT engine
+INFO     > Deploying 'vepg-45-2' using the HEAT engine
+ERROR    > Failed to deploy 'vepg-45-2' (HEAT stack creation failed): 
+'{"explanation": "The server could not comply with the request since it is either malformed or otherwise incorrect.", "code": 400, "error":
+ {"message": "Property error: : resources.VSFO-2_EXT-SRIOV-FLAT-1_FP-1.properties.network: : 
+ Error validating value \'EXT-SRIOV-FLAT-1\': 
+ Unable to find network with name or id \'EXT-SRIOV-FLAT-1\'", "traceback": null, "type":
+  "StackValidationFailed"}, "title": "Bad Request"}'
+
+root@controller:/var/lib/glance/images/vdp_epg_qcow2_cxp9026845_27r9b44/bcat_epg_cxp9029468_4r21a-75-ga6fc96ba# more epg/mkf_ericsson_templ.xml
+
+
+to delete stack:
+
+python bcat_deploy_via_cee.py -c epg/mkf_vepg_sriov.yaml \
+--vdp ../../vdp_epg_qcow2_cxp9026845_27r9b44 \
+--vnf-config epg/mkf_ericsson_templ.xml \
+--deployment epg:vepg-45-2 --delete-stack vepg-45-2
+
+======================================================
+
+
+===================================================================================================
+
+cp vepg_virtio_2-host_example_config_v3.yaml mkf_vepg_virtio_2-host_example_config_v3.yaml
+
+
+python bcat_deploy_via_cee.py -c epg/mkf_vepg_virtio_2-host_example_config_v3.yaml \
+--vdp ../../vdp_epg_qcow2_cxp9026845_27r9b44 \
+--vnf-config epg/mkf_ericsson_templ.xml \
+--deployment epg:vepg-45-2
+
+INFO     > VNFs to be deployed: vepg-45-2(EPG)
+INFO     > Looking for EPG images in the VDP directories
+INFO     > EPG images found in ../../vdp_epg_qcow2_cxp9026845_27r9b44
+INFO     > Generating the HEAT template for 'vepg-45-2'
+INFO     > The generated HEAT template for 'vepg-45-2': EPG_hot_cxp9026845_27r9b44.yaml
+INFO     > Creating the needed CEE availability zones and flavors
+INFO     > Flavor '10vcpu_16384MBmem_40GBdisk' was created in Openstack.
+INFO     > Flavor '16vcpu_24576MBmem_40GBdisk' was created in Openstack.
+INFO     > Flavor '2vcpu_6144MBmem_40GBdisk' erroneous defined in Nova, will recreate it
+INFO     > Host 'compute' is assigned to Availability Zone 'zone2_az'
+INFO     > Uploading the EPG images to Openstack
+INFO     > Image 'epg_vrp_cxp9026845_27r9b44.qcow2' will be uploaded
+INFO     > Id of created image: 3244eefb-a40f-42d9-9b2e-35c22ee08b9f
+INFO     > Upload done!
+INFO     > Image 'epg_vsfo_cxp9026845_27r9b44.qcow2' will be uploaded
+INFO     > Id of created image: e1bd1375-c01c-46ca-9c2b-6fa0401bdbe2
+INFO     > Upload done!
+INFO     > Validating the HOT file EPG_hot_cxp9026845_27r9b44.yaml for 'vepg-45-2' using the HEAT engine
+ERROR    > An error occured when validating the HEAT template: '{"explanation": "The server could not comply with the request since it is either malformed or otherwise incorrect.", "code": 400, "error": 
+{"message": "The Resource Type (Ericsson::Neutron::Port) could not be found.", "traceback": null, "type": "HTTPBadRequest"}, "title": "Bad Request"}'
+
+
+
+python bcat_create_hot.py -c epg/vepg_virtio_example_hot_thru_eo.yaml \
+--vdp ../../vdp_epg_qcow2_cxp9026845_27r9b44 \
+--vnf epg --vnf-config epg/ericsson_templ.xml
+
+INFO     > Generating the HEAT template
+INFO     > Done! The generated HEAT template: EPG_hot_cxp9026845_27r9b44.yaml
+
+
+python bcat_deploy_via_cee.py -c epg/mkf_vepg_virtio_2-host_example_config_v3.yaml \
+--vdp ../../vdp_epg_qcow2_cxp9026845_27r9b44 \
+--vnf-config EPG_hot_cxp9026845_27r9b44.yaml \
+--deployment epg:vepg-45-2cd 
+
+python bcat_deploy_via_cee.py -c epg/mkf_vepg_virtio_2-host_example_config_v3.yaml \
+--vdp ../../vdp_epg_qcow2_cxp9026845_27r9b44 \
+--vnf-config MKF_EPG_hot.yaml \
+--deployment epg:vepg-45-2cd 
+
+
+
+
+
+
+
+
+
+
+
+cd .../vdp_epg_qcow2_cxp9026845_27r9b44/bcat_epg_cxp9029468_4r21a-75-ga6fc96ba/ \
+    config_examples/cloud_configs/
+
+cp *compact*12* vepc.yaml
+
+edit vepc.yaml
+
+cd <BCAT Scripts location>
+python bcat_create_auto_config_lld.py -c vepc.yaml \
+--auto-config compact_vnfconfig.yml --csv
+
+
+
+
+python bcat_deploy_via_cee.py -c vepc.yaml \
+--auto-config compact_vnfconfig.yml \
+--rollback-on-failure
+The script:
+
+
+
+=======================================================
+VFuel Installation:
+======================
+package: CXC1737883_4-R8C25.tar
+
+Pre-requisites:
+apt-get install python-yaml python-netaddr ruby libvirt-bin genext2fs virtinst qemu-utils qemu-system-x86 qemu-kvm sshpass vlan ntp
+
+modify /etc/network/interfaces
+auto enp0s8
+iface enp0s8 inet static
+address 192.168.0.19
+netmask 255.255.255.0
+
+
+USing Non-root user : vfuel 
+
+vfuel@vfuel:~$ groups
+vfuel adm cdrom sudo dip plugdev lpadmin sambashare libvirtd  ---check it is on libvirtd
+
+mkdir ~/.ssh
+chmod 700 ~/.ssh
+
+usermod -aG sudo vfuel
+
+login using vfuel, modify file:  ~/.profile
+PATH=".... :/sbin/"    #note trailing /
+
+===============================================================================================================
+
+Configure: ./CEE_RELEASE/config.yaml.dell-single_server
+
+Region Name: RegionOne
+
+root@vfuel:~# lscpu -p
+# The following is the parsable format, which can be fed to other
+# programs. Each different item in every column has an unique ID
+# starting from zero.
+# CPU,Core,Socket,Node,,L1d,L1i,L2,L3
+0,0,0,0,,0,0,0,0
+1,1,0,0,,1,1,1,1
+2,2,0,0,,2,2,2,2
+3,3,0,0,,3,3,3,3
+
+0,0,0,0,,0,0,0,0,1,1,0,0,,1,1,1,1,2,2,0,0,,2,2,2,2,3,3,0,0,,3,3,3,3
+
+
+Create Adapter:
+
+10.101.0.0/24
+
+vCIC IP: 172.16.128.0/17
+username/password: cic
+
+Vlan Tag: 
+
+1) The subrack_ctrl_sp network is used in case of non-Ericsson hardware configurations.
+
+-800.1 subrack_ctrl_sp  (Fuel)
+    192.168.0.0/24
+
+2) The network cee_om_sp is used for vCIC northbound communication:
+- 800.2 cee_om_sp
+- 800.3
+- 800.4
+
+
+
+configure ntp server:
+
+apt-get install ntp
+nano /etc/ntp.conf
+
+
+===============================================================================================================
+
+./install_vfuel.sh [--iface <interface>]
+                   [--mem <memory_in_MiB>] 
+                   [--vcpus <number_of_vcpus>] 
+                   [--bond <network_bond>]  #not needed for single server 
+
+
+
+./install_vfuel.sh --iface enp0s8 --mem 3072 --vcpus 2
+
+
+./install_vfuel.sh --iface br-fw-admin --mem 3072 --vcpus 2
+
